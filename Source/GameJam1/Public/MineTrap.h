@@ -35,7 +35,16 @@ public:
 		const FHitResult& SweepResult);
 
 private:
-	UPROPERTY()
+	//UFUNCTION(BlueprintCallable)
+	//bool IsOverlappedActorType(ECollisionResponse a_collisionChannel, AActor* a_overlappedActor)
+	//{
+	//	if (a_overlappedActor.GetCollisionRe)
+	//}
+
+	UPROPERTY(EditAnywhere)
 	UApproachBoxTraps* m_approachBox = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Hitbox Size")
+	float m_hitboxRadius = 1.0f;
 
 };

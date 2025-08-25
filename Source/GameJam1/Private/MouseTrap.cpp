@@ -19,6 +19,10 @@ void AMouseTrap::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
+	m_approachBox->m_triggerBox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	m_approachBox->m_triggerBox->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
+
+	Cast<UBoxComponent>(m_approachBox->m_triggerBox)->SetRelativeScale3D(m_hitboxSize);
 }
 
 // Called when the game starts or when spawned

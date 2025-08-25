@@ -35,7 +35,10 @@ public:
 		const FHitResult& SweepResult);
 
 private:
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	UApproachBoxTraps* m_approachBox = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Hitbox Size")
+	FVector m_hitboxSize = FVector::OneVector;
 
 };
