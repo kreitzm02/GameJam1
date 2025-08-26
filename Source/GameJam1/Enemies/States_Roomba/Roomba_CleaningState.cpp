@@ -4,23 +4,20 @@
 #include "Roomba_CleaningState.h"
 #include <NavigationSystem.h>
 #include "AIController.h"
+#include "Navigation/PathFollowingComponent.h"
+#include "RoombaEnemy.h"
 
-const TCHAR* FRoomba_CleaningState::Name() const
-{
-	return TEXT("RoombaState_PatrolCleaning");
-}
-
-void FRoomba_CleaningState::OnEnter(AActor* a_Owner)
+void URoomba_CleaningState::OnEnter(AActor* a_Owner)
 {
 	m_Time = 0.0f;
 	m_Index = -1;
 	m_Phase = 1 - m_Phase;
 
-	APawn* pawn = Cast<APawn>(a_Owner);
-	if (!pawn) return;
-	if (!pawn->GetController()) pawn->SpawnDefaultController();
-	AAIController* ai = Cast<AAIController>(pawn->GetController());
-	if (!ai) return;
+	if (ACharacter* ch = Cast<ACharacter>(a_Owner))
+	{
+		if (UCharacterMovementComponent* move = ch->GetCharacterMovement())
+			move->MaxWalkSpeed = m_MovementSpeed;
+	}
 
 	// build path
 	m_Path.Reset();
@@ -45,45 +42,89 @@ void FRoomba_CleaningState::OnEnter(AActor* a_Owner)
 
 		if (nav)
 		{
-			FNavLocation loc;
-			if (nav->ProjectPointToNavigation(a, loc, projectExtent)) a = loc.Location;
-			if (nav->ProjectPointToNavigation(b, loc, projectExtent)) b = loc.Location;
+			FNavLocation locA, locB;
+			const bool okA = nav->ProjectPointToNavigation(a, locA, projectExtent);
+			const bool okB = nav->ProjectPointToNavigation(b, locB, projectExtent);
+			if (okA && okB)
+			{
+				m_Path.Add(locA.Location);
+				m_Path.Add(locB.Location);
+			}
 		}
-
-		m_Path.Add(a);
-		m_Path.Add(b);
 	}
 
-	// go to first point
+	// go to first position
+
+	APawn* pawn = Cast<APawn>(a_Owner);
+	if (!pawn) return;
+	if (!pawn->GetController()) pawn->SpawnDefaultController();
+	AAIController* ai = Cast<AAIController>(pawn->GetController());
+	if (!ai) return;
+
 	if (m_Path.Num() > 0)
 	{
 		m_Index = 0;
 		ai->MoveToLocation(m_Path[m_Index], m_AcceptanceRadius, true);
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Entered Cleaning State"));
 }
 
-void FRoomba_CleaningState::OnUpdate(AActor* a_Owner, float a_DeltaTime)
+void URoomba_CleaningState::OnUpdate(AActor* a_Owner, float a_DeltaTime)
 {
 	m_Time += a_DeltaTime;
+	if (!a_Owner) return;
 
-	if (!a_Owner || !m_Path.IsValidIndex(m_Index)) return;
 	APawn* pawn = Cast<APawn>(a_Owner);
 	if (!pawn) return;
+	if (!pawn->GetController()) pawn->SpawnDefaultController();
 	AAIController* ai = Cast<AAIController>(pawn->GetController());
 	if (!ai) return;
 
-	const float Dist2D = FVector::Dist2D(a_Owner->GetActorLocation(), m_Path[m_Index]);
-	if (Dist2D <= m_AcceptanceRadius)
+	if (!m_Path.IsValidIndex(m_Index))
+	{
+		if (m_Path.Num() > 0)
+		{
+			m_Index = 0;
+			ai->MoveToLocation(m_Path[m_Index], m_AcceptanceRadius, true);
+		}
+		return;
+	}
+
+	const float dist = FVector::Dist2D(a_Owner->GetActorLocation(), m_Path[m_Index]);
+
+	EPathFollowingStatus::Type status = EPathFollowingStatus::Idle;
+	if (auto* pfc = ai->GetPathFollowingComponent())
+		status = pfc->GetStatus();
+
+	const bool navIdle = (status != EPathFollowingStatus::Moving);
+	const bool close = (dist <= m_AcceptanceRadius * 1.5f);
+
+	if (navIdle || close)
 	{
 		m_Index = (m_Index + 1) % m_Path.Num();
 		ai->MoveToLocation(m_Path[m_Index], m_AcceptanceRadius, true);
 	}
 }
 
-void FRoomba_CleaningState::OnExit(AActor* a_Owner)
+void URoomba_CleaningState::OnExit(AActor* a_Owner)
 {
 	if (APawn* pawn = Cast<APawn>(a_Owner))
 	{
 		if (AAIController* ai = Cast<AAIController>(pawn->GetController())) ai->StopMovement();
 	}
+}
+
+bool URoomba_CleaningState::IsAtGoal(AActor* a_Owner) const
+{
+	if (!a_Owner || !m_Path.IsValidIndex(m_Index)) return false;
+
+	const float dist = FVector::Dist2D(a_Owner->GetActorLocation(), m_Path[m_Index]);
+
+	const APawn* pawn = Cast<APawn>(a_Owner);
+	const AAIController* ai = pawn ? Cast<AAIController>(pawn->GetController()) : nullptr;
+	const UPathFollowingComponent* pfc = ai ? ai->GetPathFollowingComponent() : nullptr;
+	const bool navIdle = pfc ? (pfc->GetStatus() != EPathFollowingStatus::Moving) : false;
+
+	return navIdle || (dist <= m_AcceptanceRadius * 1.25f);
 }

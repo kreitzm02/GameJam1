@@ -3,25 +3,25 @@
 
 #include "StateMachine.h"
 
-FStateMachine::FStateMachine(AActor* a_InOwner)
+UStateMachine::UStateMachine(AActor* a_InOwner)
 {
 	m_Owner = a_InOwner;
 }
 
-FStateMachine::~FStateMachine() = default;
+UStateMachine::~UStateMachine() = default;
 
-void FStateMachine::SetInitial(IBaseState* a_State)
+void UStateMachine::SetInitial(IBaseState* a_State)
 {
 	m_Current = a_State;
 	m_PendingEnter = true;
 }
 
-void FStateMachine::AddTransition(FTransition a_Transition)
+void UStateMachine::AddTransition(FTransition a_Transition)
 {
 	m_Transitions.Add(MoveTemp(a_Transition));
 }
 
-void FStateMachine::Update(float a_DeltaTime)
+void UStateMachine::Update(float a_DeltaTime)
 {
 	if (!m_Owner || !m_Current) return;
 
@@ -37,7 +37,7 @@ void FStateMachine::Update(float a_DeltaTime)
 	m_Current->OnUpdate(m_Owner, a_DeltaTime);
 }
 
-IBaseState* FStateMachine::TryFindTransition(IBaseState* a_From)
+IBaseState* UStateMachine::TryFindTransition(IBaseState* a_From)
 {
 	IBaseState* next = nullptr;
 
@@ -54,7 +54,7 @@ IBaseState* FStateMachine::TryFindTransition(IBaseState* a_From)
 	return next;
 }
 
-void FStateMachine::SwitchTo(IBaseState* a_Next)
+void UStateMachine::SwitchTo(IBaseState* a_Next)
 {
 	if (!a_Next || a_Next == m_Current) return;
 
@@ -63,7 +63,7 @@ void FStateMachine::SwitchTo(IBaseState* a_Next)
 	m_PendingEnter = true;
 }
 
-IBaseState* FStateMachine::GetCurrent() const
+IBaseState* UStateMachine::GetCurrent() const
 {
 	return m_Current;
 }
