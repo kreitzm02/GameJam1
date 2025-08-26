@@ -9,7 +9,7 @@ public class GameJam1 : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
     
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule", "NavigationSystem", "Niagara" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule", "NavigationSystem", "Niagara", "MoviePlayer", "UMG", "Slate", "SlateCore" });
 
         PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "Enemies"));
         PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "Enemies", "FSM"));

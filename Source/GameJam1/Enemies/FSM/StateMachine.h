@@ -9,7 +9,6 @@ class IBaseState
 {
 public:
 	virtual ~IBaseState() = default;
-	virtual const TCHAR* Name() const = 0;
 	virtual void OnEnter(AActor* a_Owner) {}
 	virtual void OnUpdate(AActor* a_Owner, float a_DeltaTime) {}
 	virtual void OnExit(AActor* a_Owner) {}
@@ -23,11 +22,11 @@ public:
 	TFunction<bool()> m_Condition;
 };
 
-class GAMEJAM1_API FStateMachine
+class GAMEJAM1_API UStateMachine
 {
 public:
-	explicit FStateMachine(AActor* a_InOwner);
-	~FStateMachine();
+	explicit UStateMachine(AActor* a_InOwner);
+	~UStateMachine();
 
 	void SetInitial(IBaseState* a_State);
 	IBaseState* GetCurrent() const;

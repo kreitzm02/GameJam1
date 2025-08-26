@@ -5,10 +5,12 @@
 #include "CoreMinimal.h"
 #include "StateMachine.h"
 
-class GAMEJAM1_API URoomba_CleaningState : public IBaseState
+/**
+ * 
+ */
+class GAMEJAM1_API URoomba_PatrolState : public IBaseState
 {
 public:
-	
 	void OnEnter(AActor* a_Owner) override;
 	void OnUpdate(AActor* a_Owner, float a_DeltaTime) override;
 	void OnExit(AActor* a_Owner) override;
@@ -16,14 +18,13 @@ public:
 	bool IsAtGoal(AActor* a_Owner) const;
 
 private:
-
-	float m_LaneWidth = 200.0f;
-	float m_AreaHalfX = 800.0f;
-	float m_AreaHalfY = 800.0f;
+	float m_Radius = 1200.0f;
 	float m_AcceptanceRadius = 35.0f;
-	TArray<FVector> m_Path;
-	int32 m_Index = -1;
-	int32 m_Phase = 0;
+	FVector m_CurrentTargetPos = FVector::ZeroVector;
 	float m_Time = 0.0f;
 	float m_MovementSpeed = 150.0f;
+
+	bool  m_RotatingBeforeMove = false;
+	float m_RotateSpeedDegPerSec = 100.0f;   
+	float m_RotateYawToleranceDeg = 2.0f;           
 };
