@@ -81,10 +81,10 @@ class AGameJam1Character : public ACharacter
 	float HitCooldown = 0.6f; 
 
 	UPROPERTY(EditAnywhere, Category = "Health|Knockback")
-	float HitBackImpulse = 800.0f;   
+	float HitBackImpulse = 1400.0f;   
 
 	UPROPERTY(EditAnywhere, Category = "Health|Knockback")
-	float HitUpImpulse = 500.0f; 
+	float HitUpImpulse = 800.0f; 
 
 public: 
 

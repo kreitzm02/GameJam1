@@ -36,7 +36,6 @@ ARoombaEnemy::ARoombaEnemy()
 	m_AudioComp->SetupAttachment(GetRootComponent());
 	m_AudioComp->bAutoActivate = false;
 	m_AudioComp->bAutoDestroy = false;
-
 }
 
 // Called when the game starts or when spawned
