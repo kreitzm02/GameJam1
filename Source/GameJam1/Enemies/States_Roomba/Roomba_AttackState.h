@@ -21,11 +21,16 @@ private:
     TWeakObjectPtr<AActor> m_Target;
 
     float m_AcceptanceRadius = 60.0f;
-    float m_ChaseSpeed = 220.0f;          
+    float m_ChaseSpeed = 400.0f;          
     float m_ChaseYawRateDeg = 720.0f;     
 
     float m_RepathCooldown = 0.2f;       
     float m_RepathTimer = 0.0f;
+
+    float m_AttackRange = 125.0f;   
+    float m_AttackCooldown = 0.6f;    
+    float m_AttackTimer = 0.0f;    
+    int32 m_Damage = 1;       
 
     AActor* PickTargetFromOwner(AActor* a_Owner);
 };

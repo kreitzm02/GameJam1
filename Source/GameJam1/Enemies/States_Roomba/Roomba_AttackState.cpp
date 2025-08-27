@@ -4,13 +4,15 @@
 #include "Roomba_AttackState.h"
 #include "RoombaEnemy.h"
 #include "AIController.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 
 void URoomba_AttackState::OnEnter(AActor* a_Owner)
 {
-    m_RepathTimer = 0.f;
+    m_RepathTimer = 0.0f;
+    m_AttackTimer = 0.0f;
 
     APawn* pawn = Cast<APawn>(a_Owner);
     if (!pawn) return;
@@ -23,7 +25,7 @@ void URoomba_AttackState::OnEnter(AActor* a_Owner)
         if (UCharacterMovementComponent* move = ch->GetCharacterMovement())
         {
             move->MaxWalkSpeed = m_ChaseSpeed;
-            move->RotationRate = FRotator(0.f, m_ChaseYawRateDeg, 0.f);
+            move->RotationRate = FRotator(0.0f, m_ChaseYawRateDeg, 0.0f);
             move->bOrientRotationToMovement = true;
         }
     }
@@ -54,10 +56,25 @@ void URoomba_AttackState::OnUpdate(AActor* a_Owner, float a_DeltaTime)
     }
 
     m_RepathTimer -= a_DeltaTime;
-    if (m_RepathTimer <= 0.f)
+    if (m_RepathTimer <= 0.0f)
     {
         ai->MoveToActor(m_Target.Get(), m_AcceptanceRadius, true);
         m_RepathTimer = m_RepathCooldown;
+    }
+
+    m_AttackTimer -= a_DeltaTime;
+
+    if (m_Target.IsValid())
+    {
+        const float dist2D = FVector::Dist2D(a_Owner->GetActorLocation(),
+            m_Target->GetActorLocation());
+
+        if (dist2D <= m_AttackRange && m_AttackTimer <= 0.f)
+        {
+            UGameplayStatics::ApplyDamage(m_Target.Get(), (float)m_Damage, (pawn ? pawn->GetController() : nullptr), a_Owner, UDamageType::StaticClass());
+
+            m_AttackTimer = m_AttackCooldown;
+        }
     }
 }
 

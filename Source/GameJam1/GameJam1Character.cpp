@@ -39,7 +39,8 @@ AGameJam1Character::AGameJam1Character()
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	GetCharacterMovement()->BrakingDecelerationFalling = 500.0f;
+	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;
+
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -97,9 +98,9 @@ void AGameJam1Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void AGameJam1Character::Die()
 {
+	GetMesh()->PlayAnimation(m_DeathAnim, false);
 	GetCharacterMovement()->DisableMovement();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetMesh()->PlayAnimation(m_DeathAnim, false);
 }
 
 void AGameJam1Character::Move(const FInputActionValue& Value)
@@ -178,7 +179,7 @@ void AGameJam1Character::ApplyHit(AActor* Source)
 void AGameJam1Character::BeginPlay()
 {
 	Super::BeginPlay();
-
+	//GetCharacterMovement()->GravityScale = 1.0f;
 	if (m_IdleAnim)
 	{
 		GetMesh()->PlayAnimation(m_IdleAnim, true);
@@ -190,19 +191,11 @@ void AGameJam1Character::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (m_Health <= 0) return;
+
 	if (UAnimSingleNodeInstance* inst = GetMesh()->GetSingleNodeInstance())
 	{
-		if (m_DeathAnim && inst->GetAnimationAsset() == m_DeathAnim)
-		{
-			const float Len = m_DeathAnim->GetPlayLength();
-			if (inst->GetCurrentTime() >= (Len - 0.01f))
-			{
-				inst->SetPosition(Len - 0.01f, false);
-				inst->SetPlaying(false);
-			}
-			return;
-		}
-		else if (m_HitAnim && inst->GetAnimationAsset() == m_HitAnim && inst->IsPlaying()) return;
+		if (m_HitAnim && inst->GetAnimationAsset() == m_HitAnim && inst->IsPlaying()) return;
 		else if (inst->GetAnimationAsset() == m_JumpAnim && inst->IsPlaying()) return;
 	}
 
@@ -228,6 +221,17 @@ void AGameJam1Character::Tick(float DeltaSeconds)
 	{
 		GetMesh()->PlayAnimation(desired, true);
 		m_CurrentAnim = desired;
+	}
+
+	constexpr float MaxGlideFallSpeed = 250.f;
+	if (auto* Move = GetCharacterMovement())
+	{
+		FVector V = Move->Velocity;
+		if (V.Z < -MaxGlideFallSpeed)
+		{
+			V.Z = -MaxGlideFallSpeed;
+			Move->Velocity = V;
+		}
 	}
 }
 
