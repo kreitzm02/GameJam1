@@ -24,6 +24,12 @@ public:
 	UStaticMeshComponent* m_RoombaMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Roomba Components")
+	USkeletalMeshComponent* m_NotRoombaMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Roomba Components")
+	bool m_UseSkeletalMesh = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Roomba Components")
 	USphereComponent* m_DetectionSphere;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Roomba Components")
@@ -40,6 +46,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roomba Detection")
 	float m_ViewConeRange = 900.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float m_DefaultSpeed = 200.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float m_ChaseSpeed = 400.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float m_RotSpeed = 400.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roomba Debug")
 	bool m_DebugViewCone = false;
@@ -58,6 +73,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Roomba Audio")
 	USoundBase* m_ChasingSound = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	UAnimSequence* m_RunAnim = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	UAnimSequence* m_WalkAnim = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	UAnimSequence* m_IdleAnim = nullptr;
 
 	UFUNCTION()
 	void PlayStateLoop(USoundBase* a_Sound, float a_Volume = 1.f, float a_Pitch = 1.f);

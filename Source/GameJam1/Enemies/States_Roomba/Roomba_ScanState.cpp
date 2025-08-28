@@ -19,8 +19,16 @@ void URoomba_ScanState::OnEnter(AActor* a_Owner)
             ai->StopMovement();
 
         if (ACharacter* ch = Cast<ACharacter>(a_Owner))
-            if (UCharacterMovementComponent* move = ch->GetCharacterMovement())
-                move->MaxWalkSpeed = 0.0f;
+        {
+            if (ARoombaEnemy* ro = Cast<ARoombaEnemy>(ch))
+            {
+                m_ScanYawSpeedDegPerSec = ro->m_RotSpeed;
+                if (UCharacterMovementComponent* move = ro->GetCharacterMovement())
+                    move->MaxWalkSpeed = 0.0f;
+                
+                ro->GetMesh()->PlayAnimation(ro->m_IdleAnim, true);
+            }
+        }
     }
 
     if (ARoombaEnemy* enemy = Cast<ARoombaEnemy>(a_Owner))
