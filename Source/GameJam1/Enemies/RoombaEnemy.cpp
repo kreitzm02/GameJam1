@@ -14,9 +14,18 @@ ARoombaEnemy::ARoombaEnemy()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	m_RoombaMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RoombaMesh"));
-	m_RoombaMesh->SetupAttachment(GetRootComponent());
-	m_RoombaMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    if (!m_UseSkeletalMesh)
+    {
+        m_RoombaMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RoombaMesh"));
+        m_RoombaMesh->SetupAttachment(GetRootComponent());
+        m_RoombaMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+    else
+    {
+        m_NotRoombaMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RoombaMesh"));
+        m_NotRoombaMesh->SetupAttachment(GetRootComponent());
+        m_NotRoombaMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
 
 	m_DetectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("DetectionSphere"));
 	m_DetectionSphere->SetupAttachment(GetRootComponent());

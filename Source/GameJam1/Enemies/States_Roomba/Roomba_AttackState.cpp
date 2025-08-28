@@ -22,12 +22,18 @@ void URoomba_AttackState::OnEnter(AActor* a_Owner)
 
     if (ACharacter* ch = Cast<ACharacter>(a_Owner))
     {
-        if (UCharacterMovementComponent* move = ch->GetCharacterMovement())
+        if (ARoombaEnemy* ro = Cast<ARoombaEnemy>(ch))
         {
-            move->MaxWalkSpeed = m_ChaseSpeed;
-            move->RotationRate = FRotator(0.0f, m_ChaseYawRateDeg, 0.0f);
-            move->bOrientRotationToMovement = true;
+            if (UCharacterMovementComponent* move = ro->GetCharacterMovement())
+            {
+                move->MaxWalkSpeed = ro->m_ChaseSpeed;
+                move->RotationRate = FRotator(0.0f, m_ChaseYawRateDeg, 0.0f);
+                move->bOrientRotationToMovement = true;
+            }
+
+            ro->GetMesh()->PlayAnimation(ro->m_RunAnim, true);
         }
+
     }
 
     m_Target = PickTargetFromOwner(a_Owner);

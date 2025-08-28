@@ -15,8 +15,12 @@ void URoomba_CleaningState::OnEnter(AActor* a_Owner)
 
 	if (ACharacter* ch = Cast<ACharacter>(a_Owner))
 	{
-		if (UCharacterMovementComponent* move = ch->GetCharacterMovement())
-			move->MaxWalkSpeed = m_MovementSpeed;
+		if (ARoombaEnemy* ro = Cast<ARoombaEnemy>(ch))
+		{
+			if (UCharacterMovementComponent* move = ro->GetCharacterMovement())
+				move->MaxWalkSpeed = ro->m_DefaultSpeed;
+		}
+		
 	}
 
 	// build path

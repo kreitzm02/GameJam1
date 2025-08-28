@@ -29,9 +29,17 @@ void URoomba_PatrolState::OnEnter(AActor* a_Owner)
 
 			m_RotatingBeforeMove = true;
 			ai->StopMovement();
-			if (ACharacter* ch = Cast<ACharacter>(a_Owner))
-				if (UCharacterMovementComponent* mv = ch->GetCharacterMovement())
-					mv->MaxWalkSpeed = 0.0f; 
+            if (ACharacter* ch = Cast<ACharacter>(a_Owner))
+            {
+                if (ARoombaEnemy* ro = Cast<ARoombaEnemy>(ch))
+                {
+                    if (UCharacterMovementComponent* move = ro->GetCharacterMovement())
+                        move->MaxWalkSpeed = 0.0f;
+
+                    ro->GetMesh()->PlayAnimation(ro->m_IdleAnim, true);
+                }
+
+            }
 		}
 	}
 
@@ -66,8 +74,16 @@ void URoomba_PatrolState::OnUpdate(AActor* a_Owner, float a_DeltaTime)
         if (FMath::Abs(deltaYaw) <= m_RotateYawToleranceDeg)
         {
             if (ACharacter* ch = Cast<ACharacter>(a_Owner))
-                if (UCharacterMovementComponent* mv = ch->GetCharacterMovement())
-                    mv->MaxWalkSpeed = m_MovementSpeed;
+            {
+                if (ARoombaEnemy* ro = Cast<ARoombaEnemy>(ch))
+                {
+                    if (UCharacterMovementComponent* move = ro->GetCharacterMovement())
+                        move->MaxWalkSpeed = ro->m_DefaultSpeed;
+
+                    ro->GetMesh()->PlayAnimation(ro->m_WalkAnim, true);
+                }
+
+            }
 
             ai->MoveToLocation(m_CurrentTargetPos, m_AcceptanceRadius, true);
             m_RotatingBeforeMove = false;
@@ -87,8 +103,16 @@ void URoomba_PatrolState::OnUpdate(AActor* a_Owner, float a_DeltaTime)
                 m_RotatingBeforeMove = true;
                 ai->StopMovement();
                 if (ACharacter* ch = Cast<ACharacter>(a_Owner))
-                    if (UCharacterMovementComponent* mv = ch->GetCharacterMovement())
-                        mv->MaxWalkSpeed = 0.0f;
+                {
+                    if (ARoombaEnemy* ro = Cast<ARoombaEnemy>(ch))
+                    {
+                        if (UCharacterMovementComponent* move = ro->GetCharacterMovement())
+                            move->MaxWalkSpeed = 0.0f;
+
+                        ro->GetMesh()->PlayAnimation(ro->m_IdleAnim, true);
+                    }
+
+                }
             }
         }
     }
