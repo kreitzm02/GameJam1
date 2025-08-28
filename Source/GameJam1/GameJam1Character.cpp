@@ -5,8 +5,10 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Animation/AnimSingleNodeInstance.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
@@ -37,7 +39,8 @@ AGameJam1Character::AGameJam1Character()
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+	GetCharacterMovement()->BrakingDecelerationFalling = 50.0f;
+
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -52,6 +55,7 @@ AGameJam1Character::AGameJam1Character()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	m_Health = m_MaxHealth;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -92,6 +96,13 @@ void AGameJam1Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	}
 }
 
+void AGameJam1Character::Die()
+{
+	GetMesh()->PlayAnimation(m_DeathAnim, false);
+	GetCharacterMovement()->DisableMovement();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
 void AGameJam1Character::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -126,4 +137,119 @@ void AGameJam1Character::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AGameJam1Character::ApplyHit(AActor* Source)
+{
+	const float now = GetWorld()->GetTimeSeconds();
+	if (now - LastHitTime < HitCooldown) return;
+	LastHitTime = now;
+
+	m_Health = FMath::Clamp(m_Health - 1, 0, m_MaxHealth);
+
+	FVector dir = FVector::ZeroVector;
+	if (Source)
+	{
+		dir = GetActorLocation() - Source->GetActorLocation();
+		dir.Z = 0.f;
+		if (!dir.Normalize())
+		{
+			dir = -GetActorForwardVector();
+			dir.Z = 0.f; dir.Normalize();
+		}
+	}
+	else
+	{
+		dir = -GetActorForwardVector();
+		dir.Z = 0.f; dir.Normalize();
+	}
+
+	const FVector launchVec = (dir * HitBackImpulse) + FVector(0, 0, HitUpImpulse);
+
+	LaunchCharacter(launchVec, true, true);
+
+	if (m_Health <= 0)
+	{
+		Die();
+	}
+
+	GetMesh()->PlayAnimation(m_HitAnim, false);
+}
+
+void AGameJam1Character::BeginPlay()
+{
+	Super::BeginPlay();
+	//GetCharacterMovement()->GravityScale = 1.0f;
+	if (m_IdleAnim)
+	{
+		GetMesh()->PlayAnimation(m_IdleAnim, true);
+		m_CurrentAnim = m_IdleAnim;
+	}
+}
+
+void AGameJam1Character::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (m_Health <= 0) return;
+
+	if (UAnimSingleNodeInstance* inst = GetMesh()->GetSingleNodeInstance())
+	{
+		if (m_HitAnim && inst->GetAnimationAsset() == m_HitAnim && inst->IsPlaying()) return;
+		else if (inst->GetAnimationAsset() == m_JumpAnim && inst->IsPlaying()) return;
+	}
+
+	const float speed = GetVelocity().Size2D();
+	const bool  isFalling = GetCharacterMovement()->IsFalling();
+
+	UAnimSequence* desired = nullptr;
+
+	if (isFalling && m_FallAnim)
+	{
+		desired = m_FallAnim;
+	}
+	else if (speed > m_WalkSpeedThreshold && m_WalkAnim)
+	{
+		desired = m_WalkAnim;
+	}
+	else
+	{
+		desired = m_IdleAnim;
+	}
+
+	if (desired && desired != m_CurrentAnim)
+	{
+		GetMesh()->PlayAnimation(desired, true);
+		m_CurrentAnim = desired;
+	}
+
+	constexpr float MaxGlideFallSpeed = 250.f;
+	if (auto* Move = GetCharacterMovement())
+	{
+		FVector V = Move->Velocity;
+		if (V.Z < -MaxGlideFallSpeed)
+		{
+			V.Z = -MaxGlideFallSpeed;
+			Move->Velocity = V;
+		}
+	}
+}
+
+void AGameJam1Character::Jump()
+{
+	if (m_JumpAnim)
+	{
+		GetMesh()->PlayAnimation(m_JumpAnim, false);
+	}
+
+	Super::Jump();
+}
+
+float AGameJam1Character::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (DamageAmount > 0.f)
+	{
+		ApplyHit(DamageCauser);
+	}
+	return DamageAmount;
 }
