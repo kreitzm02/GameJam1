@@ -11,8 +11,12 @@ AMouseTrap::AMouseTrap()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	RootComponent = CreateDefaultSubobject<USceneComponent>("RootComponent");
+
 	m_approachBox = CreateDefaultSubobject<UApproachBoxTraps>("ApproachBox");
 	m_approachBox->m_triggerBox = CreateDefaultSubobject<UBoxComponent>("TriggerBox");
+
+	m_approachBox->m_triggerBox->SetupAttachment(RootComponent);
 }
 
 void AMouseTrap::OnConstruction(const FTransform& Transform)
@@ -37,5 +41,11 @@ void AMouseTrap::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AMouseTrap::DestroyApproachBox()
+{
+	m_approachBox->m_triggerBox->OnComponentBeginOverlap.RemoveAll(this);
+	m_approachBox->m_triggerBox->DestroyComponent();
 }
 
