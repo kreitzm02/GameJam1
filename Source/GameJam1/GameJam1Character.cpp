@@ -12,6 +12,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "PlayerUI.h"
+#include "Blueprint/UserWidget.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -99,9 +101,20 @@ void AGameJam1Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void AGameJam1Character::Die()
 {
 	GetMesh()->PlayAnimation(m_DeathAnim, false);
-	GetCharacterMovement()->DisableMovement();
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//GetCharacterMovement()->DisableMovement();
+	LockMoveInput(true);
+	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	m_playerUI->UpdateHealthUI(m_Health);
 }
+
+void AGameJam1Character::LockMoveInput(bool a_lock)
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		PC->SetIgnoreMoveInput(a_lock);
+	}
+}
+
 
 void AGameJam1Character::Move(const FInputActionValue& Value)
 {
@@ -147,6 +160,8 @@ void AGameJam1Character::ApplyHit(AActor* Source)
 
 	m_Health = FMath::Clamp(m_Health - 1, 0, m_MaxHealth);
 
+	m_playerUI->UpdateHealthUI(m_Health);
+
 	FVector dir = FVector::ZeroVector;
 	if (Source)
 	{
@@ -176,6 +191,25 @@ void AGameJam1Character::ApplyHit(AActor* Source)
 	GetMesh()->PlayAnimation(m_HitAnim, false);
 }
 
+void AGameJam1Character::InstakillPlayer()
+{
+	const float now = GetWorld()->GetTimeSeconds();
+	if (now - LastHitTime < HitCooldown) return;
+	LastHitTime = now;
+
+	m_Health = FMath::Clamp(m_Health - 99, 0, m_MaxHealth);
+
+	if (m_Health <= 0)
+	{
+		Die();
+	}
+
+	GetMesh()->PlayAnimation(m_HitAnim, false);
+
+	m_playerUI->UpdateHealthUI(m_Health);
+}
+
+
 void AGameJam1Character::BeginPlay()
 {
 	Super::BeginPlay();
@@ -184,6 +218,13 @@ void AGameJam1Character::BeginPlay()
 	{
 		GetMesh()->PlayAnimation(m_IdleAnim, true);
 		m_CurrentAnim = m_IdleAnim;
+	}
+
+	if (m_playerUIClass)
+	m_playerUI = CreateWidget<UPlayerUI>(GetWorld(), m_playerUIClass);
+	if (m_playerUI)
+	{
+		m_playerUI->AddToViewport();
 	}
 }
 
@@ -233,6 +274,8 @@ void AGameJam1Character::Tick(float DeltaSeconds)
 			Move->Velocity = V;
 		}
 	}
+
+	m_playerUI->UpdateHealthUI(m_Health);
 }
 
 void AGameJam1Character::Jump()
