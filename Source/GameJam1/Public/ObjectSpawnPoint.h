@@ -29,6 +29,6 @@ public:
 	void SpawnRandomActor();
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<AActor*> m_spawnableActors;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawnable Actors", meta=(AllowPrivateAccess="true"))
+	TArray<UClass*> m_spawnableActors;
 };
