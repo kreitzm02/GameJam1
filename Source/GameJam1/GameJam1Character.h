@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PlayerUI.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "Animation/AnimSequence.h"
@@ -74,8 +75,7 @@ class AGameJam1Character : public ACharacter
 	UPROPERTY(EditAnywhere, Category = "Health")
 	int32 m_MaxHealth = 3;
 
-	UPROPERTY(VisibleAnywhere, Category = "Health")
-	int32 m_Health = 3;
+	
 
 	UPROPERTY(EditAnywhere, Category = "Health")
 	float HitCooldown = 0.6f; 
@@ -86,10 +86,25 @@ class AGameJam1Character : public ACharacter
 	UPROPERTY(EditAnywhere, Category = "Health|Knockback")
 	float HitUpImpulse = 800.0f; 
 
-public: 
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> m_playerUIClass = nullptr;
 
-	UFUNCTION()
+	
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	int32 m_Health = 3;
+
+	UPROPERTY(BlueprintReadOnly)
+	UPlayerUI* m_playerUI = nullptr;
+
+	UFUNCTION(BlueprintCallable)
 	void ApplyHit(AActor* Source);
+
+	UFUNCTION(BlueprintCallable)
+	void InstakillPlayer();
+
+	void LockMoveInput(bool a_lock);
 
 	// override methods
 
