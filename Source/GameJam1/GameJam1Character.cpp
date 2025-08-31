@@ -9,10 +9,12 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "PlayerUI.h"
+#include "GameManager.h"
 #include "Blueprint/UserWidget.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -36,7 +38,7 @@ AGameJam1Character::AGameJam1Character()
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->JumpZVelocity = 900.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -105,6 +107,14 @@ void AGameJam1Character::Die()
 	LockMoveInput(true);
 	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	m_playerUI->UpdateHealthUI(m_Health);
+	TArray<AActor*> found;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Manager"), found);
+	if (found.Num() == 0) return;
+
+	if (AGameManager* gm = Cast<AGameManager>(found[0]))
+	{
+		gm->ShowDeathScreen();
+	}
 }
 
 void AGameJam1Character::LockMoveInput(bool a_lock)
@@ -209,6 +219,12 @@ void AGameJam1Character::InstakillPlayer()
 	m_playerUI->UpdateHealthUI(m_Health);
 }
 
+void AGameJam1Character::ChangeCookieAmount(int32 a_Amount)
+{
+	m_PlayerCookieAmount += a_Amount;
+	m_playerUI->UpdateCookieUI(m_PlayerCookieAmount);
+}
+
 
 void AGameJam1Character::BeginPlay()
 {
@@ -225,6 +241,7 @@ void AGameJam1Character::BeginPlay()
 	if (m_playerUI)
 	{
 		m_playerUI->AddToViewport();
+		m_playerUI->UpdateCookieUI(m_PlayerCookieAmount);
 	}
 }
 

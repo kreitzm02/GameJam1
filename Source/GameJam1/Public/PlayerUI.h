@@ -18,4 +18,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void UpdateHealthUI(int32 a_health);
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void UpdateCookieUI(int32 a_cookie);
+
 };
