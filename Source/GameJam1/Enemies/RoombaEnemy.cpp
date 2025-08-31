@@ -135,12 +135,8 @@ void ARoombaEnemy::UpdateViewCone()
         const FVector leftEnd = origin + leftRot.Vector() * (range > 0.f ? range : 900.f);
         const FVector rightEnd = origin + rightRot.Vector() * (range > 0.f ? range : 900.f);
 
-        DrawDebugLine(world, origin, leftEnd, FColor::Cyan, false, 0.f, 0, 2.f);
-        DrawDebugLine(world, origin, rightEnd, FColor::Cyan, false, 0.f, 0, 2.f);
-
-        for (const TWeakObjectPtr<AActor>& a : m_ConeDetectedActors)
-            if (a.IsValid())
-                DrawDebugSphere(world, a->GetActorLocation(), 16.f, 12, FColor::Yellow, false, 0.f);
+        //DrawDebugLine(world, origin, leftEnd, FColor::Cyan, false, 0.f, 0, 2.f);
+        //DrawDebugLine(world, origin, rightEnd, FColor::Cyan, false, 0.f, 0, 2.f);
     }
 }
 

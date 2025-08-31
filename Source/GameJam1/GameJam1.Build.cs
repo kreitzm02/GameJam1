@@ -13,5 +13,6 @@ public class GameJam1 : ModuleRules
 
         PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "Enemies"));
         PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "Enemies", "FSM"));
+        PublicIncludePaths.Add(ModuleDirectory);
     }
 }
