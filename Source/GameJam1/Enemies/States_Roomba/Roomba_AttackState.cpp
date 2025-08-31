@@ -72,10 +72,9 @@ void URoomba_AttackState::OnUpdate(AActor* a_Owner, float a_DeltaTime)
 
     if (m_Target.IsValid())
     {
-        const float dist2D = FVector::Dist2D(a_Owner->GetActorLocation(),
-            m_Target->GetActorLocation());
+        const float dist2D = FVector::Dist2D(a_Owner->GetActorLocation(), m_Target->GetActorLocation());
 
-        if (dist2D <= m_AttackRange && m_AttackTimer <= 0.f)
+        if (dist2D <= m_AttackRange && m_AttackTimer <= 0.f && FMath::Abs(m_Target->GetActorLocation().Z - a_Owner->GetActorLocation().Z) <= 10.0f )
         {
             UGameplayStatics::ApplyDamage(m_Target.Get(), (float)m_Damage, (pawn ? pawn->GetController() : nullptr), a_Owner, UDamageType::StaticClass());
 

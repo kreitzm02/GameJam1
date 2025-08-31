@@ -75,6 +75,8 @@ class AGameJam1Character : public ACharacter
 	UPROPERTY(EditAnywhere, Category = "Health")
 	int32 m_MaxHealth = 3;
 
+	UPROPERTY(VisibleAnywhere)
+	int32 m_PlayerCookieAmount = 0;
 	
 
 	UPROPERTY(EditAnywhere, Category = "Health")
@@ -103,6 +105,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void InstakillPlayer();
+
+	UFUNCTION()
+	void ChangeCookieAmount(int32 a_Amount);
 
 	void LockMoveInput(bool a_lock);
 
@@ -139,6 +144,7 @@ public:
 
 	int32 GetPlayerMaxHP() { return m_MaxHealth; }
 	int32 GetPlayerCurrentHP() { return m_Health;  }
+	int32 GetPlayerCurrentCookies() { return m_PlayerCookieAmount; }
 
 	float LastHitTime = -1000.0f;
 	void Die();
